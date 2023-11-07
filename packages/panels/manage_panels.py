@@ -44,5 +44,4 @@ class ManagePanels(ManageFunctions):
         self._printer()
         print(self.panel_data[self.panel_name])
         opt = input('> ')
-        print(opt)
         self.panel_data[self.panel_name]['cmds'][opt]['func']()
