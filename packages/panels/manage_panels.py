@@ -6,6 +6,7 @@ class ManagePanels(ManageFunctions):
     def __init__(self, panel:str):
         self.nick = {}
         self.panel_data = {}
+        self.panel = str(panel)
         self.panel_data = {'funcs': {}, 'cmds': {}}
     
     def __new__(cls, *args, **kwargs):
@@ -17,7 +18,6 @@ class ManagePanels(ManageFunctions):
         return new_instance
 
     def add_func(self, nick, func: object, desc = None) -> dict:
-        self.nick[nick] = func
         self.panel_data['funcs'][nick] = {'func': func, 'desc': str(desc)}
 
     def add_cmds(self, nick, func, desc: str = None):
@@ -35,14 +35,17 @@ class ManagePanels(ManageFunctions):
             for nick, infos in functions.items():
                 description = infos['desc']
                 print(f'{Colors.CIAN}[+] {nick} {Colors.YELLOW}>{Colors.RESET} {description}', end='\n')
+            print('\n\n')
         elif opt is not None: 
             return
-    def run(self):
+
+    def run(self, input_format=None):
         self._printer()
         cmds = self.panel_data['cmds']
         funcs = self.panel_data['funcs']
+        df_format = f'({Colors.RED}{self.panel}{Colors.RESET})>' if input_format is None else input_format
         while True:
-            opt = input('> ')
+            opt = input(f'{df_format} ')
             try:
                 if opt not in cmds.keys():
                         if opt in ['exit', 'quit']:
@@ -57,5 +60,6 @@ class ManagePanels(ManageFunctions):
                         cmds[cmd]['func'](*args)
                 else:
                     cmds[opt]['func']()
+
             except Exception as e:
                 print(f'{Colors.RED}[!] ERROR >>> {Colors.RESET}', str(e))

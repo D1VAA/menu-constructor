@@ -62,7 +62,7 @@ class MenuConstructor:
             print(f'{Colors.CIAN}[*] run   {Colors.YELLOW} >{Colors.RESET} Executa a função.')
             print(f'{Colors.CIAN}[*] exit  {Colors.YELLOW} >{Colors.RESET} Sai do console.', end='\n\n')
 
-            print(f'{"=" * 25} FUNÇÕES {"=" * 25}', end='\n\n')
+            print(f'{"=" * 25} ******* {"=" * 25}', end='\n\n')
             for option, values in self.opt.items():
                 func_name = values.__name__
                 v = f'Executa: {Colors.BLUE}{func_name}{Colors.RESET}'
