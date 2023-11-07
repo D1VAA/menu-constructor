@@ -14,7 +14,9 @@ class ManagePanelsWithConfig(ManagePanels):
             value = param.default if param.default != inspect._empty else "No Default Value"
             func_parameters[func_name][name] = value
         while True:
-            cmd = str(input(f'use {Colors.HARD_RED}({self.nick})>{Colors.RESET} '))
+            cmd = str(input(f'use ({Colors.HARD_RED}{func.__name__}{Colors.RESET})> '))
+            if cmd in ['exit', 'quit']:
+                return
 
 
 def primeira_funcao(primeiro_parametro:str, segundo_parametro:int):

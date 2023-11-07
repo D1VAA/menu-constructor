@@ -4,6 +4,7 @@ from ..functions.manage_functions import ManageFunctions
 class ManagePanels(ManageFunctions):
     _instances = {}
     def __init__(self, panel:str):
+        self.nick = {}
         self.panel_data = {}
         self.panel_data = {'funcs': {}, 'cmds': {}}
     
@@ -16,12 +17,11 @@ class ManagePanels(ManageFunctions):
         return new_instance
 
     def add_func(self, nick, func: object, desc = None) -> dict:
-        self.nick = nick
+        self.nick[nick] = func
         self.panel_data['funcs'][nick] = {'func': func, 'desc': str(desc)}
-        return self.panel_data
+
     def add_cmds(self, nick, func, desc: str = None):
         self.panel_data['cmds'][nick] = {'func': func, 'desc': str(desc)}
-        return self.panel_data
     
     def _printer(self, opt=None):
         if opt is None:
