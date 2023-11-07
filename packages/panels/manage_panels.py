@@ -40,3 +40,9 @@ class ManagePanels(ManageFunctions):
                 print(f'{Colors.CIAN}[+] {nick} {Colors.YELLOW}>{Colors.RESET} {description}', end='\n')
         elif opt is not None: 
             return
+    def run(self):
+        self._printer()
+        print(self.panel_data[self.panel_name])
+        opt = input('> ')
+        print(opt)
+        self.panel_data[self.panel_name]['cmds'][opt]['func']()
