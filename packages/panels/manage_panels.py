@@ -1,7 +1,6 @@
 from ..bcolors import Colors
-from ..functions.manage_functions import ManageFunctions
 
-class ManagePanels(ManageFunctions):
+class ManagePanels:
     _instances = {}
     def __init__(self, panel:str):
         self.nick = {}
@@ -17,7 +16,7 @@ class ManagePanels(ManageFunctions):
         cls._instances[panel] = new_instance
         return new_instance
 
-    def add_func(self, nick, func: object, desc = None) -> dict:
+    def add_func(self, nick, func: object, desc = None):
         self.panel_data['funcs'][nick] = {'func': func, 'desc': str(desc)}
 
     def add_cmds(self, nick, func, desc: str = None):

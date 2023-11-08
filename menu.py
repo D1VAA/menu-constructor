@@ -1,5 +1,5 @@
 import inspect
-from bcolors import Colors
+from packages.bcolors import Colors
 from time import sleep
 
 t = '''
