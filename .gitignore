@@ -1,2 +1,6 @@
 **/__pycache__/
 .gitignore
+build
+dist
+setup.py
+menubuilder.egg-info

@@ -1,4 +1,4 @@
-from ..bcolors import Colors
+from menu.utils import Colors
 
 class ManagePanels:
     _instances = {}
@@ -11,7 +11,6 @@ class ManagePanels:
         return cls._instances[panel]
 
     def __init__(self, panel:str):
-        self.nick = {}
         self.panel = str(panel)
         self.panel_data = {'opts': {}, 'cmds': {}}
         self.opts = self.panel_data['opts']
@@ -20,13 +19,13 @@ class ManagePanels:
         self.opts_keys = self.opts.keys()
     
     @property
-    def instances(self):
+    def instances(self) -> dict:
         return self._instances
 
-    def add_opts(self, nick, func: object = None, desc = None):
+    def add_opts(self, nick: str, func: callable = None, desc: str = None):
         self.opts[nick] = {'func': func, 'desc': str(desc)}
 
-    def add_cmds(self, nick, func, desc: str = None):
+    def add_cmds(self, nick: str, func: callable, desc: str = None):
         self.cmds[nick] = {'func': func, 'desc': str(desc)}
     
     def printer(self, opt: ['opts', 'cmds']=None):
@@ -62,6 +61,7 @@ class ManagePanels:
             try:
                 if opt in ['exit', 'quit']:
                     break
+                # If the input isn't a cmd (like "show options"), must be a cmd and an opt (cmd + opt)
                 if opt not in self.cmds_keys:
                         cmd, *args = opt.split()
 
