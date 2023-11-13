@@ -1,4 +1,5 @@
 from menu.utils import Colors
+from typing import Literal, Optional, Callable
 
 class ManagePanels:
     _instances = {}
@@ -22,13 +23,13 @@ class ManagePanels:
     def instances(self) -> dict:
         return self._instances
 
-    def add_opts(self, nick: str, func: callable = None, desc: str = None):
+    def add_opts(self, nick: str, func: Optional[Callable] = None, desc: Optional[str] = None):
         self.opts[nick] = {'func': func, 'desc': str(desc)}
 
-    def add_cmds(self, nick: str, func: callable, desc: str = None):
+    def add_cmds(self, nick: str, func: Optional[Callable], desc: Optional[str] = None):
         self.cmds[nick] = {'func': func, 'desc': str(desc)}
     
-    def printer(self, opt: ['opts', 'cmds']=None):
+    def printer(self, opt: Optional[Literal['opts', 'cmds']]=None):
         print('\n\n')
         cmd_format = f'{"=" * 25} COMANDOS {"=" * 25}'
         opt_format = f'\n{"=" * 26} OPÇÕES {"=" * 26}'

@@ -1,20 +1,11 @@
 import inspect
-from menu.panels.config_panel import ConfigPanel
+from typing import Optional, Type, Callable
+from menu.src.config_panel import ConfigPanel
 
-class Setup:
-    """Class to verify the data before pass to the config panel"""
-    def __init__(self, obj):
+class Setup(ConfigPanel):
+    """Class to support the ConfigPanel by handing with classes instead of functions"""
+    def __init__(self, obj: Type, method: Optional[Callable] = None):
         self.obj = obj
-
-    @property
-    def isclass(self) -> bool:
-        return inspect.isclass(self.obj)
-    
-    @staticmethod
-    def get_params(self) -> dict:
-        sig = inspect.signature(self.obj.__init__) if self.isclass else inspect.signature(self.obj)
-        init_params = sig.parameters
-        params = {}
-        for param, value in init_params.items():
-            params[param] = value
-        return params
+        self._method = method
+        self._init_params = self.obj_params(obj)
+        self._method_params = self.obj_params(method) if method is not None else None
