@@ -29,7 +29,7 @@ class ManagePanels:
     def add_cmds(self, nick: str, func: Optional[Callable], desc: Optional[str] = None):
         self.cmds[nick] = {'func': func, 'desc': str(desc)}
     
-    def printer(self, opt: Optional[Literal['opts', 'cmds']]=None):
+    def printer(self, opt: Optional[Literal['opts' , 'cmds']]=None):
         print('\n\n')
         cmd_format = f'{"=" * 25} COMANDOS {"=" * 25}'
         opt_format = f'\n{"=" * 26} OPÇÕES {"=" * 26}'
@@ -54,7 +54,7 @@ class ManagePanels:
                 print(f'{Colors.BLUE}[+] {nick} {Colors.RESET}> {description}', end='\n')
         print('\n\n')
 
-    def run(self, input_format=None):
+    def run(self, input_format: Optional[str]=None):
         self.printer()
         df_format = f'({Colors.RED}{self.panel}{Colors.RESET})>' if input_format is None else input_format
         while True:

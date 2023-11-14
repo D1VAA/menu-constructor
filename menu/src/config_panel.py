@@ -1,61 +1,102 @@
-from typing import Callable
+from typing import Callable, Tuple
 from menu.utils import Colors
-from src.manage_panels import ManagePanels 
-from src.modules.class_handler import Setup
-from time import sleep
+from menu.src.manage_panels import ManagePanels 
 import inspect
 
 class ConfigPanel(ManagePanels):
     """
     This class uses some resources from the ManagePanels, to build a Panel that allow the user to configurate parameters and execute functions that were added as an [opt].
     """
+    _data = {}
+    @property
+    def data(self):
+        return self._data
+    
     def use(self, obj: Callable):
-        # Use Panel Setup
-        self.use_instance = ManagePanels('use')
-        input_format = f'{self.use_instance.panel} ({Colors.RED}{obj.__name__}{Colors.RESET})>'
+        self.func_name: str = obj.__name__
         self.func = obj 
 
-        self._params = self.obj_params(obj)
+        self.use_instance = ManagePanels('use')
+        input_format = f'{self.use_instance.panel} ({Colors.RED}{self.func_name}{Colors.RESET})>'
+
+        if self.func_name in self.data: 
+            self._params = self.data[self.func_name]
+        else:
+            self.data[self.func_name] = self.obj_params(obj)
+            self._params = self.data[self.func_name]
         [self.use_instance.add_opts(param, desc=value) for param, value in self._params.items()]
-        self.use_instance.add_cmds('show options', self.printer, 'Mostra esse menu')
+        self.use_instance.add_cmds('show options', self.use_instance.printer, 'Mostra esse menu')
         self.use_instance.add_cmds('set', self._update_parameters, 'Configura os valores dos parâmetros.')
         self.use_instance.add_cmds('run', self._execute, 'Roda a função')
         self.use_instance.run(input_format=input_format)
     
     @staticmethod
-    def obj_params(obj) -> dict[str, str]:
-        sig = inspect.signature(obj.__init__) if inspect.isclass(obj) else inspect.signature(obj)
-        init_params = sig.parameters
+    def obj_params(obj: Callable | Tuple) -> dict[str, str]:
+        """
+        Method that receives an object and extracts all its parameters.
+        """
         params = {}
-        for param, value in init_params.items():
-            params[param] = value
+        def extract_params(sig):
+            for param, value in sig.parameters.items():
+                if param not in ['self', 'cls']:
+                    params[param] = value
+        if isinstance(obj, tuple):
+            for item in obj:
+                if inspect.isclass(item):
+                    extract_params(inspect.signature(item.__init__))
+                else:
+                    extract_params(inspect.signature(item))
+        else:
+            if inspect.isclass(obj):
+                extract_params(inspect.signature(obj.__init__))
+            else:
+                extract_params(inspect.signature(obj))
         return params
-    
-    def _update_parameters(self, parameter, new_value):
-        # Method used to update the parameters values
+
+    def _update_parameters(self, parameter: str, new_value: str):
         if parameter not in self.use_instance.opts_keys:
-            print(f"{Colors.RED}[!]{Colors.RESET} Parâmetro não encontrado...")
-            return
-        # Relative reference = pass another function as a value for the parameter (like "panel_name:function_nick")
-        elif ':' in new_value and new_value.split(':')[0] in self.instances.keys():
-            ref, opt = new_value.split(':')
-            print(f'\n\n{Colors.BLUE}[+]{Colors.RESET} Relative reference found >>>', end=' ')
-            print(f'{Colors.RED}[Panel]{Colors.RESET} : {ref}\t{Colors.RED}[Opt]{Colors.RESET} : {opt}')
-            sleep(0.3)
+            print(f"{Colors.RED}[!]{Colors.RESET} Parâmetro: {parameter} não encontrado...")
+        elif ':' in new_value:
+            self._handle_relative_reference(parameter, new_value)
+        else:
+            self._update_single_parameter(parameter, new_value)
+    
+    def _handle_relative_reference(self, parameter, new_value):
+        ref, opt = new_value.split(':')
+        if ref in self.instances and opt in self.instances[ref].opts_keys:
+            print(f"\n{Colors.BLUE}[+]{Colors.RESET} Relative reference found...", end= '\t')
+            print(f"{Colors.BLUE}PANEL:{Colors.RESET} [{ref}] {Colors.BLUE}OPT:{Colors.RESET} [{opt}]n\n")
             instance = self.instances[ref]
             ref_opt = instance.opts[opt]['func']
             if ref_opt.__name__ == self.func.__name__:
                 print(f"\n{Colors.RED}[!]{Colors.RESET} Invalid operation...\n")
                 return
-            self._params[parameter] = ref_opt
-
-        else: 
-            self._params[parameter] = new_value
-        
-        # Update and call the printer method
+            else:
+                self._params[parameter] = ref_opt
+                self.data[self.func_name][parameter] = ref_opt
+        else:
+            print(f'{Colors.RED}[!]{Colors.RESET} Invalid relative reference...\n')
+        self._update_printer_method(parameter, new_value)
+    
+    def _update_single_parameter(self, parameter, new_value):
+        self._params[parameter] = new_value
+        self.data[self.func_name][parameter] = new_value
+        self._update_printer_method(parameter, new_value)
+    
+    def _update_printer_method(self, parameter, new_value):
         self.use_instance.opts[parameter]['desc'] = new_value
         self.use_instance.printer(opt='opts')
-    
+
     def _execute(self):
         print(f'{Colors.BLUE}[-]{Colors.RESET} Running...\n\n')
-        self.func(**self._params)
+        if inspect.isclass(self.func):
+            result = self.func(**self._params)
+            self.data[self.func_name]['instance'] = result
+        elif '.' in self.func.__qualname__:
+            class_name = self.func.__qualname__.split('.')[0]
+            try:
+                instance = self.data[class_name]['instance']
+                method = self.func
+                method(instance, **self._params)
+            except Exception:
+                self.func(**self._params)
