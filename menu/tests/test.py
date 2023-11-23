@@ -1,48 +1,46 @@
-import pytest
-from menu.src import ManagePanels
-from menu.src.config_panel import ConfigPanel
-from menu.menu_builder import MenuBuilder
-import inspect
+import unittest
+from unittest.mock import patch
+from src.manage_panels import ManagePanels
+from src.config_panel import ConfigPanel
+#from menu_builder import MenuBuilder
 
 def example(um=None, dois=None):
     return 'Testing'
 
-#Manage Panels test
+# Manage Panels test
 panel_name = 'test_panel'
-@pytest.fixture
-def manage_panels_instance():
-    instance = ManagePanels(panel_name)
-    return instance
 
-def test_manage_panels_creation(manage_panels_instance):
-    assert manage_panels_instance.panel == panel_name
-    assert manage_panels_instance.opts == {}
-    assert manage_panels_instance.cmds == {}
-    assert manage_panels_instance.opts_keys == set()
-    assert manage_panels_instance.cmds_keys == set()
+class TestManagePanels(unittest.TestCase):
+    def setUp(self):
+        self.manage_panels_instance = ManagePanels(panel_name)
 
-def test_add_opts(manage_panels_instance):
-    manage_panels_instance.add_opts('option1', lambda x: x+1, desc="Descrição option 1")
-    assert 'option1' in manage_panels_instance.opts_keys
-    assert manage_panels_instance.opts['option1']['desc'] == "Descrição option 1"
-    assert manage_panels_instance.opts['option1']['func'](1) == 2
+    def test_manage_panels_creation(self):
+        self.assertEqual(self.manage_panels_instance.panel, panel_name)
+        self.assertEqual(self.manage_panels_instance.opts, {})
+        self.assertEqual(self.manage_panels_instance.cmds, {})
+        self.assertEqual(self.manage_panels_instance.opts_keys, set())
+        self.assertEqual(self.manage_panels_instance.cmds_keys, set())
 
-def test_add_cmds(manage_panels_instance):
-    manage_panels_instance.add_cmds('command1', example, "Descrição comando 1")
-    assert 'command1' in manage_panels_instance.cmds_keys
-    assert manage_panels_instance.cmds['command1']['desc'] == "Descrição comando 1"
-    assert manage_panels_instance.cmds['command1']['func']() == 'Testing'
+    def test_add_opts(self):
+        self.manage_panels_instance.add_opts('option1', lambda x: x + 1, desc="Descrição option 1")
+        self.assertIn('option1', self.manage_panels_instance.opts_keys)
+        self.assertEqual(self.manage_panels_instance.opts['option1']['desc'], "Descrição option 1")
+        self.assertEqual(self.manage_panels_instance.opts['option1']['func'](1), 2)
 
-@pytest.fixture
-def config_panel_instance():
-    instance = MenuBuilder(panel_name)
-    return instance.use(example)
+    def test_add_cmds(self):
+        self.manage_panels_instance.add_cmds('command1', example, "Descrição comando 1")
+        self.assertIn('command1', self.manage_panels_instance.cmds_keys)
+        self.assertEqual(self.manage_panels_instance.cmds['command1']['desc'], "Descrição comando 1")
+        self.assertEqual(self.manage_panels_instance.cmds['command1']['func'](), 'Testing')
 
-def test_config_panel_instance(config_panel_instance):
-    return config_panel_instance
-#     config_panel_instance = config_panel_instance.use(example)
-#     assert config_panel_instance.func_name == 'example'
-#     assert config_panel_instance.func_name in config_panel_instance.data
-#     assert config_panel_instance._params == config_panel_instance.data[config_panel_instance.func_name]
-#     assert 'um' in config_panel_instance._params and 'dois' in config_panel_instance._params
-#     assert all(opt in config_panel_instance.opts_keys for opt in ['show options', 'set', 'run'])
+class TestConfigPanelInstance(unittest.TestCase):
+    def test_config_panel_instance(self, mock_input):
+        test_case = ['set um 1', 'set dois 2']
+        for case in test_case:
+            self.config_panel_instance = ConfigPanel(panel_name).use(example, case)
+        self.assertEqual(self.config_panel_instance.func_name, 'example')
+        self.assertEqual(self.config_panel_instance._params['um'], '1')
+        self.assertEqual(self.config_panel_instance._params['dois'], '2')
+
+if __name__ == '__main__':
+    unittest.main()
