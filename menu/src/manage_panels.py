@@ -1,4 +1,4 @@
-from menu.utils import Colors
+from utils.bcolors import Colors
 from typing import Literal, Optional, Callable
 
 class ManagePanels:

@@ -1,6 +1,6 @@
 from typing import Callable, Tuple
-from menu.utils import Colors
-from menu.src.manage_panels import ManagePanels 
+from utils.bcolors import Colors
+from src.manage_panels import ManagePanels 
 import inspect
 
 class ConfigPanel(ManagePanels):
@@ -12,7 +12,7 @@ class ConfigPanel(ManagePanels):
     def data(self):
         return self._data
     
-    def use(self, obj: Callable):
+    def use(self, obj: Callable, mock_input=None):
         self.func_name: str = obj.__name__
         self.func = obj 
 
@@ -28,7 +28,12 @@ class ConfigPanel(ManagePanels):
         self.use_instance.add_cmds('show options', self.use_instance.printer, 'Mostra esse menu')
         self.use_instance.add_cmds('set', self._update_parameters, 'Configura os valores dos parâmetros.')
         self.use_instance.add_cmds('run', self._execute, 'Roda a função')
-        self.use_instance.run(input_format=input_format)
+        if mock_input is not None:
+            self.use_instance.opt = mock_input
+        else:
+            self.use_instance.run(input_format=input_format)
+        
+        return self
     
     @staticmethod
     def obj_params(obj: Callable | Tuple) -> dict[str, str]:
@@ -90,11 +95,14 @@ class ConfigPanel(ManagePanels):
     def _execute(self):
         print(f'{Colors.BLUE}[-]{Colors.RESET} Running...\n\n')
         if inspect.isclass(self.func):
+            msg = f"|{'-'*3}> Instance Created"
+            print(msg, end='\n\n')
             result = self.func(**self._params)
             self.data[self.func_name]['instance'] = result
-        elif '.' in self.func.__qualname__:
-            class_name = self.func.__qualname__.split('.')[0]
+        else:
             try:
+                print(f"|{'-'*3}> Loading Instance", end='\n\n')
+                class_name = self.func.__qualname__.split('.')[0]
                 instance = self.data[class_name]['instance']
                 method = self.func
                 method(instance, **self._params)

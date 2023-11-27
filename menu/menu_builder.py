@@ -1,4 +1,4 @@
-from menu.src import ConfigPanel
+from src.config_panel import ConfigPanel
 
 class MenuBuilder(ConfigPanel):
     def __init__(self, panel):
